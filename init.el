@@ -5,13 +5,13 @@
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(wombat))
  '(package-selected-packages
-   '(ccls lsp-mode ivy-rich ivy which-key orderless corfu ac-clang tree-sitter-langs)))
+   '(lsp-ui haskell-emacs lsp-haskell dockerfile-mode go-mode indent-guide auto-dim-other-buffers swiper ccls lsp-mode ivy-rich ivy which-key orderless corfu ac-clang tree-sitter-langs)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(auto-dim-other-buffers-face ((t (:background "gray11")))))
 
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
@@ -23,13 +23,8 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-(package-initialize)
 (unless package-archive-contents
-  (package-refresh-contents))
-
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+  (package-refresh-contents t))
 
   ;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
@@ -38,7 +33,18 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(require 'auto-dim-other-buffers)
+(add-hook 'after-init-hook (lambda ()
+  (when (fboundp 'auto-dim-other-buffers-mode)
+    (auto-dim-other-buffers-mode t))))
+
 (setq inhibit-startup-message t)
+
+(require 'indent-guide)
+(indent-guide-global-mode)
+(set-face-background 'indent-guide-face "gray15")
+(setq indent-guide-recursive t)
+(set-face-foreground 'indent-guide-face "white")
 
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
 ;; and `package-pinned-packages`. Most users will not need or want to do this.
@@ -57,6 +63,19 @@
 
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(define-key global-map (kbd "C-<up>") 'windmove-up)
+(define-key global-map (kbd "C-<down>") 'windmove-down)
+(define-key global-map (kbd "C-<left>") 'windmove-left)
+(define-key global-map (kbd "C-<right>") 'windmove-right)
+
+
+(require 'auto-complete)
+(global-auto-complete-mode t)
+(defun auto-complete-mode-maybe ()
+  "No maybe for you. Only AC!"
+  (unless (minibufferp (current-buffer))
+    (auto-complete-mode 1)))
 
 (use-package which-key
   :init (which-key-mode)
@@ -85,6 +104,9 @@
 (use-package ivy-rich
   :init
   (ivy-rich-mode 1))
+
+(use-package swiper
+  :ensure t)
 
 (use-package tree-sitter-langs
   :ensure t
@@ -151,6 +173,11 @@
 
 (global-display-line-numbers-mode)
 
+(require 'cc-mode)
+(add-hook 'c-mode-common-hook 'electric-pair-mode)
+
 (semantic-mode 1)
+
+(setq compilation-skip-threshold 2)
 
 (package-initialize)
